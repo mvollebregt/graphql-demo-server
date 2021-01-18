@@ -49,9 +49,14 @@ public class GraphQLProvider {
     private RuntimeWiring buildWiring() {
         return RuntimeWiring.newRuntimeWiring()
                 .type(newTypeWiring("Query")
-                        .dataFetcher("personById", graphQLDataFetchers::getPersonById))
+                        .dataFetcher("allPeople", graphQLDataFetchers::getAllPeople)
+                        .dataFetcher("allFilms", graphQLDataFetchers::getAllFilms)
+                        .dataFetcher("personById", graphQLDataFetchers::getPersonById)
+                        .dataFetcher("filmById", graphQLDataFetchers::getFilmById))
                 .type(newTypeWiring("Person")
-                        .dataFetcher("film", graphQLDataFetchers::getFilm))
+                        .dataFetcher("films", graphQLDataFetchers::getFilms))
+                .type(newTypeWiring("Film")
+                        .dataFetcher("people", graphQLDataFetchers::getPeople))
                 .build();
     }
 }
