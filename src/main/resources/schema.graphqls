@@ -1,0 +1,16 @@
+type Query {
+    personById(id: ID): Person
+}
+
+type Person {
+    id: ID
+    name: String
+    height: Int
+    film: Film
+}
+
+type Film {
+    id: ID
+    title: String
+    director: String
+}
