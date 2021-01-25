@@ -1,8 +1,9 @@
 #TODO
 
 - using a real database
-- security  
 - updating data
+- typed input objects?
+- security  https://dimitr.im/graphql-spring-security
 - batching  
 - subscriptions
 

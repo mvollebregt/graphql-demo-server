@@ -1,18 +1,29 @@
 package com.github.mvollebregt.graphqldemoserver.persondetails;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import java.util.List;
 
+@Entity
 public class Person {
+
+    @Id
+    @GeneratedValue
+    private Long id;
 
     private String name;
     private int height;
-    private List<String> films;
 
-    public List<String> getFilms() {
+    @ManyToMany
+    private List<Film> films;
+
+    public List<Film> getFilms() {
         return films;
     }
 
-    public void setFilms(List<String> films) {
+    public void setFilms(List<Film> films) {
         this.films = films;
     }
 

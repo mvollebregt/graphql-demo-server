@@ -53,6 +53,8 @@ public class GraphQLProvider {
                         .dataFetcher("allFilms", graphQLDataFetchers::getAllFilms)
                         .dataFetcher("personById", graphQLDataFetchers::getPersonById)
                         .dataFetcher("filmById", graphQLDataFetchers::getFilmById))
+                .type(newTypeWiring("Mutation")
+                        .dataFetcher("createPerson", graphQLDataFetchers::createPerson))
                 .type(newTypeWiring("Person")
                         .dataFetcher("films", graphQLDataFetchers::getFilms))
                 .type(newTypeWiring("Film")

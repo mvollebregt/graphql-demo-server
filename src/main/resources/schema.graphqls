@@ -1,8 +1,17 @@
+type Mutation {
+    createPerson(person: PersonInput!): Person
+}
+
 type Query {
     allPeople: [Person!]!
     allFilms: [Film!]!
     personById(id: ID): Person
     filmById(id: ID): Film
+}
+
+input PersonInput {
+    name: String
+    height: Int
 }
 
 type Person {

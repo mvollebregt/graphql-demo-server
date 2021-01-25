@@ -1,11 +1,12 @@
 package com.github.mvollebregt.graphqldemoserver.persondetails;
 
 import graphql.schema.DataFetchingEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
@@ -13,58 +14,58 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class GraphQLDataFetchers {
 
+    private final FilmRepository filmRepository;
+    private final PersonRepository personRepository;
+
     private static class PeopleResultList extends ResultList<Person> {
     }
 
     private static class FilmResultList extends ResultList<Film> {
     }
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    public GraphQLDataFetchers(FilmRepository filmRepository, PersonRepository personRepository) {
+        this.filmRepository = filmRepository;
+        this.personRepository = personRepository;
+    }
+
+    public Person createPerson(DataFetchingEnvironment environment) {
+        Map<String, Object> personInput = environment.getArgument("person");
+        Person person = new Person();
+        person.setName((String) personInput.get("name"));
+        person.setHeight((Integer) personInput.get("height"));
+        return personRepository.save(person);
+    }
 
     public List<Person> getAllPeople(DataFetchingEnvironment dataFetchingEnvironment) {
-        return getAll("people", PeopleResultList.class).getResults();
+        return this.personRepository.findAll();
     }
 
     public List<Film> getAllFilms(DataFetchingEnvironment dataFetchingEnvironment) {
-        return getAll("films", FilmResultList.class).getResults();
+        return this.filmRepository.findAll();
     }
 
     public Person getPersonById(DataFetchingEnvironment dataFetchingEnvironment) {
-        return getOne(dataFetchingEnvironment, "people", Person.class);
+        return this.personRepository.getOne(getId(dataFetchingEnvironment));
     }
 
     public Film getFilmById(DataFetchingEnvironment dataFetchingEnvironment) {
-        return getOne(dataFetchingEnvironment, "films", Film.class);
+        return this.filmRepository.getOne(getId(dataFetchingEnvironment));
     }
 
     public List<Film> getFilms(DataFetchingEnvironment dataFetchingEnvironment) {
-        System.out.println("start getFilms");
-        List<Film> sub = getSub(dataFetchingEnvironment, Person::getFilms, Film.class);
-        System.out.println("end getFilms");
-        return sub;
+        return ((Person) dataFetchingEnvironment.getSource()).getFilms();
     }
 
     public List<Person> getPeople(DataFetchingEnvironment dataFetchingEnvironment) {
-        System.out.println("start getPeople");
-        List<Person> sub = getSub(dataFetchingEnvironment, Film::getCharacters, Person.class);
-        System.out.println("end getPeople");
-        return sub;
+        return ((Film) dataFetchingEnvironment.getSource()).getCharacters();
     }
 
-    public <T> T getAll(String endpoint, Class<T> clazz) {
-        ResponseEntity<T> entity = restTemplate.getForEntity("https://swapi.dev/api/" + endpoint + "/", clazz);
-        return entity.getBody();
-    }
-
-    public <T> T getOne(DataFetchingEnvironment dataFetchingEnvironment, String endpoint, Class<T> clazz) {
-        String id = dataFetchingEnvironment.getArgument("id");
-        ResponseEntity<T> entity = restTemplate.getForEntity("https://swapi.dev/api/" + endpoint + "/" + id + "/", clazz);
-        return entity.getBody();
-    }
-
-    public <T, S> List<S> getSub(DataFetchingEnvironment dataFetchingEnvironment, Function<T, List<String>> property, Class<S> clazz) {
-        T obj = dataFetchingEnvironment.getSource();
-        return property.apply(obj).stream()
-                .map(id -> restTemplate.getForEntity(id.replace("http://", "https://"), clazz).getBody()).collect(toList());
+    private Long getId(DataFetchingEnvironment dataFetchingEnvironment) {
+        try {
+            return Long.parseLong(dataFetchingEnvironment.getArgument("id"));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
